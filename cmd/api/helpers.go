@@ -14,7 +14,6 @@ func (app *application) readIDParams(r *http.Request) (int64, error) {
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
 
 	if err != nil || id < 1 {
-		http.NotFound(nil, r)
 		return 0, errors.New("invalid id parameter")
 	}
 

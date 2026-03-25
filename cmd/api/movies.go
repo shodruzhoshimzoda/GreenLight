@@ -13,6 +13,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	id, err := app.readIDParams(r)
 	if err != nil {
 		http.NotFound(w, r)
+		return
 	}
 
 	fmt.Fprintln(w, "Display show movie handler: ", id)
