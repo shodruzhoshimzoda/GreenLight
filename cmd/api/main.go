@@ -39,20 +39,17 @@ func main() {
 		logger: log,
 	}
 
-	mux := http.NewServeMux() // Создание обрабочик
-	mux.HandleFunc("/v1/healthcheck", app.healthcheck)
-
 	// Создание сервера
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port), // порт подключения
-		Handler:      mux,                          // обработчики
+		Handler:      app.routes(),                 // обработчики
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		ErrorLog:     slog.NewLogLogger(log.Handler(), slog.LevelError),
 	}
 
-	log.Info("Starting API server on address: ", server.Addr)
+	log.Info("Starting API server ", "addr: ", server.Addr)
 	err := server.ListenAndServe() //
 
 	log.Error(err.Error())
