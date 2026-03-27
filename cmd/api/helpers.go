@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -18,4 +19,23 @@ func (app *application) readIDParams(r *http.Request) (int64, error) {
 	}
 
 	return id, nil
+}
+
+// writeJson - вспомогательная функция которая помогает для переобразование объекта в JSON
+func (app *application) writeJSON(w http.ResponseWriter, status int, data any, header http.Header) error {
+
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range header {
+		w.Header()[k] = v
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(status)
+	w.Write(js)
+
+	return nil
 }
