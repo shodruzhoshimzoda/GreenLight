@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 )
 
@@ -10,13 +10,24 @@ func (app *application) healthcheck(w http.ResponseWriter, r *http.Request) {
 	//fmt.Fprintln(w, "environment: ", app.config.env)
 	//fmt.Fprintln(w, "version: "+version)
 
-	json := `{"status": "available", "environment":%q, "version":%q}`
+	data := map[string]string{
+		"status":      "available",
+		"environment": app.config.env,
+		"version":     version,
+	}
 
-	jsonTag := fmt.Sprintf(json, app.config.env, version)
+	// json.Marshal function returns encoded json
+	js, err := json.Marshal(data)
 
-	// Change header
-	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
 
-	w.Write([]byte(jsonTag))
+		// Calling our logger
+		app.logger.Error(err.Error())
+		http.Error(w, "The server encountered a problem and could not process your reque", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json") // Set header
+	w.Write(js)                                        // write data in object body
 
 }
