@@ -48,7 +48,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		ErrorLog:     slog.NewLogLogger(log.Handler(), slog.LevelError),
 	}
-
+	fmt.Printf("Starting server on port %d\n", cfg.port)
 	log.Info("Starting API server ", "addr: ", server.Addr)
 	err := server.ListenAndServe() //
 
