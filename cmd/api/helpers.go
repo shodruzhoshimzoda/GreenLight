@@ -24,7 +24,7 @@ func (app *application) readIDParams(r *http.Request) (int64, error) {
 // writeJson - вспомогательная функция которая помогает для переобразование объекта в JSON
 func (app *application) writeJSON(w http.ResponseWriter, status int, data any, header http.Header) error {
 
-	js, err := json.Marshal(data)
+	js, err := json.MarshalIndent(data, " ", "\t") // Для более удобочитаемости используется MarshalIndent()
 	if err != nil {
 		return err
 	}
@@ -32,6 +32,8 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data any, h
 	for k, v := range header {
 		w.Header()[k] = v
 	}
+
+	js = append(js, '\n') // Добавления в конце спика байтов символ перехода на новую строку
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(status)
