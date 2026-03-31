@@ -16,7 +16,7 @@ func (app *application) healthcheck(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// json.Marshal function returns encoded json
-	err := app.writeJSON(w, http.StatusOK, data, nil)
+	err := app.writeJSON(w, http.StatusOK, envelope{"data": data}, nil)
 
 	if err != nil {
 		app.logger.Error(err.Error())
