@@ -8,7 +8,7 @@ type Movie struct {
 	CreatedAt time.Time `json:"-"` // не будет показано
 	Title     string    `json:"title"`
 	Year      int       `json:"year, omitempty"` // если значение не задано то мы просто вывелём 0
-	Runtime   int32     `json:"runtime,omitempty"`
+	Runtime   Runtime   `json:"runtime,omitempty"`
 	Genres    []string  `json:"genres,o,omitempty"`
 	Version   int32     `json:"version"`
 }

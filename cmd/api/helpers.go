@@ -21,8 +21,10 @@ func (app *application) readIDParams(r *http.Request) (int64, error) {
 	return id, nil
 }
 
+type envelope map[string]any
+
 // writeJson - вспомогательная функция которая помогает для переобразование объекта в JSON
-func (app *application) writeJSON(w http.ResponseWriter, status int, data any, header http.Header) error {
+func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, header http.Header) error {
 
 	js, err := json.MarshalIndent(data, " ", "\t") // Для более удобочитаемости используется MarshalIndent()
 	if err != nil {
