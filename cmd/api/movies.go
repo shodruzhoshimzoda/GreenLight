@@ -2,7 +2,6 @@ package main
 
 import (
 	"Greenlight/internal/data"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,7 +15,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		Genres  []string `json:"genres"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := app.readJSON(w, r, &input); err != nil {
 		app.errorResponses(w, r, http.StatusBadRequest, err.Error())
 		return
 

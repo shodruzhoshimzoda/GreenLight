@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -40,6 +42,49 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 
 	w.WriteHeader(status)
 	w.Write(js)
+
+	return nil
+}
+
+// readJSON - это функция прочитает тело запроса декодирует значения в структур в случае ошибки возвращает ошибку
+func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+	// Декодируем тело запроса в целевую структуру dst
+	err := json.NewDecoder(r.Body).Decode(dst)
+	if err != nil {
+		// Объявляем переменные для конкретных типов ошибок JSON
+		var syntaxError *json.SyntaxError
+		var unmarshalTypeError *json.UnmarshalTypeError
+		var invalidUnmarshalFieldError *json.InvalidUnmarshalError
+
+		switch {
+		// Ошибка синтаксиса: например, пропущена запятая или кавычка
+		case errors.As(err, &syntaxError):
+			return fmt.Errorf("body contains badly formed JSON (at character %d)", syntaxError.Offset)
+
+		// Ошибка неожиданного конца файла: JSON прерван на полпути
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return errors.New("body contains badly formed JSON")
+
+		// Ошибка несоответствия типов: например, передана строка вместо ожидаемого числа
+		case errors.As(err, &unmarshalTypeError):
+			if unmarshalTypeError.Field != "" {
+				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeError.Field)
+			}
+			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
+
+		// Ошибка пустого тела: если клиент вообще ничего не прислал в запросе
+		case errors.Is(err, io.EOF):
+			return errors.New("body must not be empty")
+
+		// Ошибка разработчика: передача неверного типа в dst (не указатель)
+		// Вызываем panic, так как это критическая ошибка в логике самого сервера
+		case errors.As(err, &invalidUnmarshalFieldError):
+			panic(err)
+		}
+
+		// Возвращаем все остальные типы ошибок без изменений
+		return err
+	}
 
 	return nil
 }
