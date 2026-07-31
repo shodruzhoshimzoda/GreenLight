@@ -24,7 +24,10 @@ type config struct {
 	port int
 	env  string
 	db   struct {
-		dsn string
+		dsn          string
+		maxOpenConns int
+		maxIdleConns int
+		maxIdleTime  time.Duration
 	}
 }
 type application struct {
@@ -38,6 +41,9 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment development|staging|production")
 
+	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "Maximum number of open connections to the database")
+	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 5, "Maximum number of idle connections to the database")
+	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
 	// environement variable for PostgreSQL DSN
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
@@ -97,6 +103,10 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	db.SetMaxOpenConns(cfg.db.maxOpenConns)
+	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+	db.SetConnMaxIdleTime(cfg.db.maxIdleTime)
 
 	defer cancel()
 
